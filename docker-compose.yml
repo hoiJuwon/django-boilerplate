@@ -1,0 +1,35 @@
+version: "3.7"
+services:
+  test_nginx:
+    image: nginx:latest
+    container_name: test_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - .:/django
+      - ./config/nginx/:/etc/nginx/conf.d
+      - ./static:/static
+    depends_on:
+      - test_prod
+  test_prod:
+    container_name: test_prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    command: sh -c "gunicorn config.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - .:/django/
+    ports:
+    - "8000:8000"
+  test_dev:
+    container_name: test_dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env.development
+    command: sh -c "python manage.py runserver 0:9000"
+    volumes:
+      - .:/django/
+    ports:
+      - "9000:9000"
